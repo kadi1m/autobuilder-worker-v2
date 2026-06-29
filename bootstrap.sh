@@ -33,12 +33,13 @@ systemctl stop ${SERVICE_NAME}.service >/dev/null 2>&1 || true
 systemctl disable ${SERVICE_NAME}.service >/dev/null 2>&1 || true
 rm -rf "$TARGET_DIR"
 
-echo "📦 Installing system dependencies (Node.js, npm, pm2)..."
+echo "📦 Installing system dependencies (Node.js, npm, pm2, build tools)..."
 if ! command -v npm &> /dev/null; then
     curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-    apt-get install -y nodejs
+    apt-get install -y nodejs build-essential python3
 else
     echo "✅ Node.js/npm is already installed."
+    apt-get install -y build-essential python3
 fi
 
 if ! command -v pm2 &> /dev/null; then
@@ -65,6 +66,8 @@ Type=oneshot
 User=$WORKER_USER
 Group=$WORKER_GROUP
 WorkingDirectory=$TARGET_DIR
+Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+Environment="HOME=/home/$WORKER_USER"
 ExecStart=/bin/bash $TARGET_DIR/deploy-worker.sh "$CP_TOKEN"
 KillMode=process
 
