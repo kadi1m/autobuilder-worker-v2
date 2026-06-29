@@ -32,7 +32,7 @@ rm /tmp/source.tar.gz
 # --- Execute App Build / Runtime Setup Here ---
 cd "$TARGET_DIR/app"
 echo "🛠️ Installing dependencies..."
-npm install --omit=dev
+npm install --omit=dev --verbose
 
 # 4. Start or restart the worker process via PM2 using npx
 echo "🔄 Starting/Restarting worker process with PM2..."
