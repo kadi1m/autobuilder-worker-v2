@@ -34,6 +34,8 @@ systemctl disable ${SERVICE_NAME}.service >/dev/null 2>&1 || true
 rm -rf "$TARGET_DIR"
 
 echo "📦 Installing system dependencies (Node.js, npm, pm2, build tools)..."
+apt-get update -y || true
+
 if ! command -v npm &> /dev/null; then
     curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
     apt-get install -y nodejs build-essential python3 python-is-python3
@@ -54,6 +56,10 @@ echo "📥 Downloading the absolute freshest deploy-worker.sh from GitHub..."
 curl -sL -o "$TARGET_DIR/deploy-worker.sh" "https://raw.githubusercontent.com/$GH_OWNER/$GH_REPO/main/deploy-worker.sh"
 chmod +x "$TARGET_DIR/deploy-worker.sh"
 chown -R $WORKER_USER:$WORKER_GROUP "$TARGET_DIR"
+
+echo "🔧 Fixing npm cache permissions just in case root contaminated them..."
+mkdir -p /home/$WORKER_USER/.npm
+chown -R $WORKER_USER:$WORKER_GROUP /home/$WORKER_USER/.npm
 
 echo "📝 Registering systemd service..."
 cat <<EOF > /etc/systemd/system/${SERVICE_NAME}.service
