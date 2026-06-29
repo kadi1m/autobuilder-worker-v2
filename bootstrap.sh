@@ -17,6 +17,15 @@ if [ -z "$1" ]; then
 fi
 CP_TOKEN="$1"
 
+# Determine the user who invoked the script
+if [ -n "$SUDO_USER" ]; then
+    WORKER_USER="$SUDO_USER"
+else
+    WORKER_USER="$(whoami)"
+fi
+WORKER_GROUP="$(id -g -n $WORKER_USER)"
+echo "👤 Configuring worker to run as user: $WORKER_USER, group: $WORKER_GROUP"
+
 echo "🧹 HARD RESET: Cleaning up any old installations..."
 systemctl stop ${SERVICE_NAME}.timer || true
 systemctl disable ${SERVICE_NAME}.timer || true
@@ -41,7 +50,7 @@ mkdir -p "$TARGET_DIR"
 echo "📥 Downloading the absolute freshest deploy-worker.sh from GitHub..."
 curl -sL -o "$TARGET_DIR/deploy-worker.sh" "https://raw.githubusercontent.com/$GH_OWNER/$GH_REPO/main/deploy-worker.sh"
 chmod +x "$TARGET_DIR/deploy-worker.sh"
-chown -R ubuntu:ubuntu "$TARGET_DIR"
+chown -R $WORKER_USER:$WORKER_GROUP "$TARGET_DIR"
 
 echo "📝 Registering systemd service..."
 cat <<EOF > /etc/systemd/system/${SERVICE_NAME}.service
@@ -51,8 +60,8 @@ After=network.target
 
 [Service]
 Type=oneshot
-User=ubuntu
-Group=ubuntu
+User=$WORKER_USER
+Group=$WORKER_GROUP
 WorkingDirectory=$TARGET_DIR
 ExecStart=/bin/bash $TARGET_DIR/deploy-worker.sh "$CP_TOKEN"
 KillMode=process
