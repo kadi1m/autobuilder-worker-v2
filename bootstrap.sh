@@ -27,8 +27,10 @@ WORKER_GROUP="$(id -g -n $WORKER_USER)"
 echo "👤 Configuring worker to run as user: $WORKER_USER, group: $WORKER_GROUP"
 
 echo "🧹 HARD RESET: Cleaning up any old installations..."
-systemctl stop ${SERVICE_NAME}.timer || true
-systemctl disable ${SERVICE_NAME}.timer || true
+systemctl stop ${SERVICE_NAME}.timer >/dev/null 2>&1 || true
+systemctl disable ${SERVICE_NAME}.timer >/dev/null 2>&1 || true
+systemctl stop ${SERVICE_NAME}.service >/dev/null 2>&1 || true
+systemctl disable ${SERVICE_NAME}.service >/dev/null 2>&1 || true
 rm -rf "$TARGET_DIR"
 
 echo "📦 Installing system dependencies (Node.js, npm, pm2)..."
