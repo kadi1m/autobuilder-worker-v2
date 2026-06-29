@@ -51,8 +51,9 @@ fi
 # 5. Notify Control Plane of successful sync (Assuming you build a /register route later)
 echo "📡 Announcing state to Control Plane..."
 curl -X POST "$CONTROL_PLANE_URL" \
+  --connect-timeout 5 \
   -H "Authorization: Bearer $CP_TOKEN" \
   -H "Content-Type: application/json" \
-  -d "{\"node_id\": \"$NODE_ID\", \"status\": \"active\"}"
+  -d "{\"node_id\": \"$NODE_ID\", \"status\": \"active\"}" || echo "⚠️ Warning: Could not reach Control Plane at $CONTROL_PLANE_URL"
 
 echo "✅ Node sync and clean rebuild complete."
